@@ -1,0 +1,94 @@
+---
+title: "Chat-Download"
+author: "Michael Puerto"
+date: "3/23/2021"
+output: html_document
+---
+
+# Install Packages
+
+Featuring the Rchamp package. Downloading from the Development branch (Currently up-to-date)
+
+```{r setup, message=FALSE,warning=FALSE,error=FALSE}
+
+library(pacman)
+pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools)
+
+devtools::install_github('mowgl-i/rchamp@Development')
+
+```
+
+
+## Grabbing the LSF data
+
+```{r}
+
+file_path_g = 'C:/Users/macia/Documents/MSIA-19/Git/LSF-Success'
+files<-dir("C:/Users/macia/Documents/MSIA-19/Git/LSF-Success",pattern = '.csv')
+
+for(file in files){
+  file_name = file
+  file_path_l = paste(file_path_g, file_name, sep = '/')
+  assign(file_name, read_csv(file_path_l))
+  
+}
+
+
+
+```
+
+## Look at lsf data
+
+### March 23 LSF data
+
+Starting with 87 clips
+
+```{r}
+
+`3_23_reddit.csv` %>% group_by(domain) %>%  count()
+
+```
+
+### Look at post scores
+
+```{r}
+LSF_500plus <-`3_23_reddit.csv` %>% filter(`Post Score` > 500 & domain == 'clips.twitch.tv')
+LSF_500plus
+
+```
+
+### Grab the slugs
+
+```{r}
+```
+
+
+```{r}
+
+slugs<-LSF_500plus$url %>% str_extract('(?<=//clips.twitch.tv/).+')
+
+slugs[1]
+
+```
+
+
+## Grabbing the data from the first clip
+
+```{r}
+library(Rchamp)
+
+twitch_auth()
+
+
+get_clip_chat(slugs[1])
+
+
+```
+
+```{r}
+
+chat_dataframe
+
+
+```
+
