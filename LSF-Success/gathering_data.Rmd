@@ -16,6 +16,8 @@ pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools)
 
 devtools::install_github('mowgl-i/rchamp@Development')
 
+emote_dictionary <- read_csv("emote_dictionary.csv")
+
 ```
 
 
@@ -60,10 +62,6 @@ LSF_500plus
 ### Grab the slugs
 
 ```{r}
-```
-
-
-```{r}
 
 slugs<-LSF_500plus$url %>% str_extract('(?<=//clips.twitch.tv/).+')
 
@@ -87,8 +85,12 @@ get_clip_chat(slugs[1])
 
 ```{r}
 
-chat_dataframe
+example_chat<-chat_dataframe[20:25,]
 
+`%notin%` <- Negate(`%in%`)
+
+
+which(str_detect(example_chat$message, emote_dictionary$emote_name))
 
 ```
 

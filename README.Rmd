@@ -1,0 +1,39 @@
+---
+title: "README"
+author: "Michael Puerto"
+date: "4/6/2021"
+output: github_document
+---
+
+# Predicting LSF post success
+
+## yada yada
+
+# Tools used
+
+
+
+Example
+
+```{r}
+
+library(Rchamp)
+library(readr)
+library(dplyr)
+
+emote_dictionary <- read_csv('LSF-Success/emote_dictionary.csv')
+
+
+#Rchamp::twitch_auth()
+
+#Rchamp::get_clip_chat()
+
+
+
+`3_23_reddit.csv` <- read_csv('3_23_reddit.csv')
+
+`3_23_reddit.csv` %>% head()
+
+
+```
+
