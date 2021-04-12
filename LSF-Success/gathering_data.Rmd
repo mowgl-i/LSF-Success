@@ -18,12 +18,14 @@ devtools::install_github('mowgl-i/rchamp@Development')
 
 emote_dictionary <- read_csv("emote_dictionary.csv")
 
+
 ```
 
 
 ## Grabbing the LSF data
 
 ```{r}
+
 
 file_path_g = 'C:/Users/macia/Documents/MSIA-19/Git/LSF-Success'
 files<-dir("C:/Users/macia/Documents/MSIA-19/Git/LSF-Success",pattern = '.csv')
@@ -82,15 +84,36 @@ get_clip_chat(slugs[1])
 
 
 ```
+ 
+```{r append global emotes to emote_dictionary}
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+
+```
 
 ```{r}
 
-example_chat<-chat_dataframe[20:25,]
+library(tidytext)
 
-`%notin%` <- Negate(`%in%`)
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+emote_names<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
 
 
-which(str_detect(example_chat$message, emote_dictionary$emote_name))
+test<-chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% anti_join(emote_names)
+
 
 ```
 
