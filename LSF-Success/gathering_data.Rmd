@@ -12,7 +12,7 @@ Featuring the Rchamp package. Downloading from the Development branch (Currently
 ```{r setup, message=FALSE,warning=FALSE,error=FALSE}
 
 library(pacman)
-pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools)
+pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools,ggthemes)
 
 devtools::install_github('mowgl-i/rchamp@Development')
 
@@ -61,6 +61,14 @@ LSF_500plus
 
 ```
 
+```{r}
+
+LSF_500minus <- `3_23_reddit.csv` %>% filter(`Post Score` < 500 & domain == 'clips.twitch.tv')
+LSF_500minus
+
+```
+
+
 ### Grab the slugs
 
 ```{r}
@@ -68,6 +76,9 @@ LSF_500plus
 slugs<-LSF_500plus$url %>% str_extract('(?<=//clips.twitch.tv/).+')
 
 slugs[1]
+
+slugs_low <- LSF_500minus$url %>% str_extract('(?<=//clips.twitch.tv/).+')
+
 
 ```
 
@@ -114,6 +125,4978 @@ emote_names<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word =
 
 test<-chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% anti_join(emote_names)
 
+test %>% group_by(word) %>% count(sort = T)%>%
+  head(n=10) %>% 
+  ggplot(aes(x= reorder(word,-n),y=n))+
+  geom_col()+
+  theme_wsj(base_size = 12, color = "green")+
+  theme(axis.text.x = element_text(angle = 25))+
+  labs(title ="Token Counts",subtitle = 'ModTime is probably an emote')
+
 
 ```
 
+
+
+```{r}
+
+test_2 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names)
+
+test_2 %>%   group_by(word) %>% count(sort = T)%>%
+  head(n=10) %>% 
+  ggplot(aes(x= reorder(word,-n),y=n))+
+  geom_col()+
+  theme_wsj(base_size = 12, color = "green")+
+  theme(axis.text.x = element_text(angle = 25))+
+  labs(title ="Token Counts")
+
+
+```
+
+```{r}
+
+proportion<-test_2 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+lsf_test <- LSF_500plus[1,]
+
+
+for(row in 1:nrow(proportion)){
+  print(proportion[row,])
+  temp_data <- proportion[row,]
+  
+  if(row == 1){
+    
+  lsf_test['first_emote'] = temp_data$word
+  lsf_test['first_emote_count']= temp_data$count
+  lsf_test['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test['second_emote'] = temp_data$word
+  lsf_test['second_emote_count']= temp_data$count
+  lsf_test['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test['third_emote'] = temp_data$word
+  lsf_test['third_emote_count']= temp_data$count
+  lsf_test['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test['fourth_emote'] = temp_data$word
+  lsf_test['fourth_emote_count']= temp_data$count
+  lsf_test['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+
+```
+
+# Second Clip
+
+```{r}
+
+twitch_auth()
+get_clip_chat(slugs[3])
+
+```
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+lsf_test_2 <- LSF_500plus[3,]
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_test,lsf_test_2)
+
+```
+
+
+
+# Third Clip
+```{r}
+LSF_500plus[8,]$url
+get_clip_chat(slugs[8]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[8,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```
+# Fourth Clip
+
+```{r}
+get_clip_chat(slugs[9]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[9,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# Fifth Clip
+```{r}
+get_clip_chat(slugs[10]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[10,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# Sixth Clip
+```{r}
+get_clip_chat(slugs[11]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[11,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# Seventh Clip 
+```{r}
+get_clip_chat(slugs[12]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[12,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 8th clip
+```{r}
+get_clip_chat(slugs[13]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[13,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```
+# 9th Clip
+```{r}
+get_clip_chat(slugs[15]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[15,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 10th Clip
+```{r}
+get_clip_chat(slugs[16]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[16,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 11th Clip
+```{r}
+get_clip_chat(slugs[17]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[17,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 12ht Clip
+```{r}
+get_clip_chat(slugs[19]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[19,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 13th Clip
+```{r}
+get_clip_chat(slugs[20]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[20,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 14th Clip
+```{r}
+get_clip_chat(slugs[21]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[21,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 15th Clip
+```{r}
+get_clip_chat(slugs[22]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[22,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 16th Clip
+```{r}
+get_clip_chat(slugs[23]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[23,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 17th Clip
+```{r}
+get_clip_chat(slugs[24]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[24,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 18th Clip
+```{r}
+get_clip_chat(slugs[25]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[25,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 19th Clip
+```{r}
+get_clip_chat(slugs[26]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[26,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 20th Clip
+```{r}
+get_clip_chat(slugs[27]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[27,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 21st Clip
+```{r}
+get_clip_chat(slugs[28]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[28,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 22nd Clip
+```{r}
+get_clip_chat(slugs[29]) # if clip missing or full vod not available then clip data still retrieved but no chat. 
+
+
+lsf_test_2 <- LSF_500plus[29,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 23rd Clip
+## missing clip -> end of 500+ points
+```{r}
+get_clip_chat(slugs[30])# not even chat data -> clip missing. 
+
+
+lsf_test_2 <- LSF_500plus[30,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+```{r}
+
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+
+
+
+
+
+
+```{r}
+get_clip_chat(slugs_low[2])
+
+
+lsf_test_2 <- LSF_500minus[2,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+
+
+
+
+# 24th Clip
+```{r}
+get_clip_chat(slugs_low[4])
+
+
+lsf_test_2 <- LSF_500minus[4,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 25th Clip
+
+```{r}
+get_clip_chat(slugs_low[5])
+
+
+lsf_test_2 <- LSF_500minus[5,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 26th Clip 
+
+```{r}
+get_clip_chat(slugs_low[6])
+
+
+lsf_test_2 <- LSF_500minus[6,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 27th Clip
+
+```{r}
+get_clip_chat(slugs_low[7])
+
+
+lsf_test_2 <- LSF_500minus[7,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 28th Clip
+
+```{r}
+Sys.sleep(2)
+get_clip_chat(slugs_low[8])
+
+
+lsf_test_2 <- LSF_500minus[8,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 29th Clip
+
+```{r}
+get_clip_chat(slugs_low[10])
+
+
+lsf_test_2 <- LSF_500minus[10,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 30th Clip
+```{r}
+get_clip_chat(slugs_low[11])
+
+
+lsf_test_2 <- LSF_500minus[11,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 31 Clip
+```{r}
+get_clip_chat(slugs_low[13])
+
+
+lsf_test_2 <- LSF_500minus[13,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 32 clip
+```{r}
+get_clip_chat(slugs_low[14])
+
+
+lsf_test_2 <- LSF_500minus[14,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 33 clip
+```{r}
+get_clip_chat(slugs_low[17])
+
+
+lsf_test_2 <- LSF_500minus[17,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 34 clip
+```{r}
+get_clip_chat(slugs_low[18])
+
+
+lsf_test_2 <- LSF_500minus[18,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+test_3 %>% count()
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  print(proportion_2[row,])
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 35 clip 
+```{r}
+get_clip_chat(slugs_low[19])
+
+
+lsf_test_2 <- LSF_500minus[19,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 36 clip
+```{r}
+get_clip_chat(slugs_low[20])
+
+
+lsf_test_2 <- LSF_500minus[20,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 37 clip
+```{r}
+get_clip_chat(slugs_low[21])
+
+
+lsf_test_2 <- LSF_500minus[21,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 38 Clip
+
+
+
+```{r}
+get_clip_chat(slugs_low[22])
+
+
+lsf_test_2 <- LSF_500minus[22,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 39 Clip
+```{r}
+get_clip_chat(slugs_low[23])
+
+
+lsf_test_2 <- LSF_500minus[23,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 40 Clip
+```{r}
+get_clip_chat(slugs_low[24])
+
+
+lsf_test_2 <- LSF_500minus[24,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 41 Clip
+```{r}
+get_clip_chat(slugs_low[25])
+
+
+lsf_test_2 <- LSF_500minus[25,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 42 Clip 
+```{r}
+get_clip_chat(slugs_low[27])
+
+
+lsf_test_2 <- LSF_500minus[27,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 43 Clip
+```{r}
+get_clip_chat(slugs_low[30])
+
+
+lsf_test_2 <- LSF_500minus[30,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+
+
+# 44 Clip
+```{r}
+get_clip_chat(slugs_low[32])
+
+
+lsf_test_2 <- LSF_500minus[32,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 45 Clip 
+```{r}
+get_clip_chat(slugs_low[34])
+
+
+lsf_test_2 <- LSF_500minus[34,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 46 Clip 
+```{r}
+get_clip_chat(slugs_low[35])
+
+
+lsf_test_2 <- LSF_500minus[35,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 47 Clip 
+```{r}
+get_clip_chat(slugs_low[37])
+
+
+lsf_test_2 <- LSF_500minus[37,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 48 Clip
+```{r}
+get_clip_chat(slugs_low[38])
+
+
+lsf_test_2 <- LSF_500minus[38,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 49 Clip
+```{r}
+get_clip_chat(slugs_low[41])
+
+
+lsf_test_2 <- LSF_500minus[41,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 50 Clip
+```{r}
+get_clip_chat(slugs_low[42])
+
+
+lsf_test_2 <- LSF_500minus[42,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 51 Clip
+```{r}
+get_clip_chat(slugs_low[43])
+
+
+lsf_test_2 <- LSF_500minus[43,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+
+# 52 Clip
+```{r}
+get_clip_chat(slugs_low[45])
+
+
+lsf_test_2 <- LSF_500minus[45,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 53 Clip
+```{r}
+get_clip_chat(slugs_low[46])
+
+
+lsf_test_2 <- LSF_500minus[46,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+
+# 54 Clip
+```{r}
+get_clip_chat(slugs_low[47])
+
+
+lsf_test_2 <- LSF_500minus[47,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```
+
+# 55 Clip
+```{r}
+get_clip_chat(slugs_low[48])
+
+
+lsf_test_2 <- LSF_500minus[48,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+
+# 56 Clip 
+```{r}
+get_clip_chat(slugs_low[50])
+
+
+lsf_test_2 <- LSF_500minus[50,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```
+
+# 57 Clip
+```{r}
+get_clip_chat(slugs_low[51])
+
+
+lsf_test_2 <- LSF_500minus[51,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 58 clip
+```{r}
+get_clip_chat(slugs_low[52])
+
+
+lsf_test_2 <- LSF_500minus[52,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+``` 
+# 59 clip
+```{r}
+get_clip_chat(slugs_low[53])
+
+
+lsf_test_2 <- LSF_500minus[53,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 60 Clip
+```{r}
+get_clip_chat(slugs_low[54])
+
+
+lsf_test_2 <- LSF_500minus[54,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 61 Clip
+```{r}
+get_clip_chat(slugs_low[55])
+
+
+lsf_test_2 <- LSF_500minus[55,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  
+# 62 Clip Nothing
+```{r}
+get_clip_chat(slugs_low[57])
+
+
+lsf_test_2 <- LSF_500minus[57,]
+
+emote_names <- emote_dictionary$emote_name
+
+for (emote in chat_dataframe$global_emotes){
+  if(emote != 'No Emotes'){
+    emotes <- str_split(emote, pattern = ' ')
+    for (word in emotes){
+      emote_names <- append(word,emote_names)
+    
+    }
+  }
+}
+
+emote_names<-unique(emote_names)
+emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% mutate(word = as.character(word))
+
+
+``` 
+
+```{r}
+
+chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+
+test_3 <- chat_dataframe %>% select(message) %>%  unnest_tokens('word', message,to_lower = F) %>% inner_join(emote_names_df)
+
+proportion_2<-test_3 %>% group_by(word) %>% count(sort = T, name = 'count') %>% ungroup() %>% mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+
+
+
+proportion_2
+
+for(row in 1:nrow(proportion_2)){
+  temp_data <- proportion_2[row,]
+  
+  if(row == 1){
+    
+  lsf_test_2['first_emote'] = temp_data$word
+  lsf_test_2['first_emote_count']= temp_data$count
+  lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 2){
+    
+  lsf_test_2['second_emote'] = temp_data$word
+  lsf_test_2['second_emote_count']= temp_data$count
+  lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 3){
+    
+  lsf_test_2['third_emote'] = temp_data$word
+  lsf_test_2['third_emote_count']= temp_data$count
+  lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+
+    
+  } else if(row == 4){
+    
+  lsf_test_2['fourth_emote'] = temp_data$word
+  lsf_test_2['fourth_emote_count']= temp_data$count
+  lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+
+    
+  }else{print('nothing')}
+  
+  
+}
+
+lsf_new<-rbind(lsf_new,lsf_test_2)
+
+```  

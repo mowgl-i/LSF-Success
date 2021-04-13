@@ -1,0 +1,113 @@
+---
+title: "lsf_and_chat"
+author: "Michael Puerto"
+date: "4/12/2021"
+output: html_document
+---
+
+# Reading in libraries and data
+
+```{r, warning=FALSE,message=FALSE,error=FALSE}
+library(pacman)
+pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools,ggthemes, tidymodels)
+library(randomForest)
+
+lsf_and_chat =read_csv('lsf_and_chat.csv')
+
+```
+
+# Exploring data
+
+```{r}
+
+lsf_and_chat %>% psych::describe()
+
+```
+
+```{r}
+
+lsf_and_chat %>% select(`Post Score`) %>% ggplot(aes(y = `Post Score`))+ geom_histogram(bins =100)
+
+```
+
+# Creating new variable 
+
+```{r}
+
+lsf_prep_data <-lsf_and_chat %>% mutate('successful' = case_when(
+  `Post Score` >= 500 ~ 'successful',
+  `Post Score` < 500 ~ 'not_successful')) %>% select(-c(X1,`Created UTC`,domain,url))
+
+```
+
+# Splitting data
+
+```{r}
+set.seed(1235)
+lsf_split <- initial_split(lsf_prep_data, strata = successful)
+lsf_train <- training(lsf_split)
+lsf_test <- testing(lsf_split)
+
+```
+
+# The recipe
+
+```{r}
+
+lsf_recipe <- recipe(successful ~ 
+first_emote+second_emote+third_emote+fourth_emote+
+              first_emote_count+first_emote_count+first_emote_count+first_emote_count+
+              first_emote_proportion+first_emote_proportion+first_emote_proportion+first_emote_proportion,data = lsf_train) %>%
+  step_dummy(all_nominal(), -all_outcomes())
+
+lsf_prep <- prep(lsf_recipe)
+lsf_juice <- juice(lsf_prep)
+
+
+```
+
+
+# Model Specs
+
+```{r}
+
+lsf_specs<-rand_forest(
+  mtry = tune(),
+  trees = 750,
+  min_n = tune()) %>% set_mode('classification') %>% set_engine('ranger')
+
+
+```
+
+# LSF workflow
+
+```{r}
+
+lsf_workflow<-workflow() %>% 
+  add_recipe(lsf_recipe) %>% 
+  add_model(lsf_specs)
+
+```
+
+
+# Train hyperparams # stopped here since missing data
+
+## 10fold
+
+```{r}
+set.seed(1235)
+lsf_folds<- vfold_cv(lsf_train)
+
+tune_lsf<-tune_grid(
+  lsf_workflow,
+  resamples = lsf_folds,
+  grid = 10
+  
+)
+
+
+
+
+```
+
+
