@@ -13,12 +13,14 @@ Featuring the Rchamp package. Downloading from the Development branch (Currently
 
 library(pacman)
 pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools,ggthemes)
+library(tidytext)
+
 
 devtools::install_github('mowgl-i/rchamp@Development')
 
 emote_dictionary <- read_csv("emote_dictionary.csv")
 
-
+library(Rchamp)
 ```
 
 
@@ -53,11 +55,19 @@ Starting with 87 clips
 
 ```
 
+```{r}
+april_reddit.csv %>% select(-X1)
+
+```
+
 ### Look at post scores
 
 ```{r}
 LSF_500plus <-`3_23_reddit.csv` %>% filter(`Post Score` > 500 & domain == 'clips.twitch.tv')
 LSF_500plus
+
+LSF_500plusA <- april_reddit.csv %>% filter(`Post Score` > 500 & domain == 'clips.twitch.tv')
+
 
 ```
 
@@ -65,6 +75,9 @@ LSF_500plus
 
 LSF_500minus <- `3_23_reddit.csv` %>% filter(`Post Score` < 500 & domain == 'clips.twitch.tv')
 LSF_500minus
+
+LSF_500minusA <- april_reddit.csv %>% filter(`Post Score` < 500 & domain == 'clips.twitch.tv')
+
 
 ```
 
@@ -76,9 +89,15 @@ LSF_500minus
 slugs<-LSF_500plus$url %>% str_extract('(?<=//clips.twitch.tv/).+')
 
 slugs[1]
+slugsA <-LSF_500plusA$url %>% str_extract('(?<=//clips.twitch.tv/).+')
+
+
 
 slugs_low <- LSF_500minus$url %>% str_extract('(?<=//clips.twitch.tv/).+')
 
+
+
+slugs_lowA <- LSF_500minusA$url %>% str_extract('(?<=//clips.twitch.tv/).+')
 
 ```
 
@@ -5100,3 +5119,113 @@ for(row in 1:nrow(proportion_2)){
 lsf_new<-rbind(lsf_new,lsf_test_2)
 
 ```  
+
+# 63 and forloop
+
+```{r}
+r =1:5
+
+for(i in 1:length(slugsA)){
+  print(i)
+  print(slugsA[i])
+  }
+
+slugsA
+```
+
+
+
+# for clips over/under 500 points
+
+use slugs_lowA, slugsA, LSF_500minusA, LSF_500plusA
+
+```{r}
+
+# last fail here ; https://clips.twitch.tv/RamshackleAstuteDunlinMingLee-9Ol1N63fbsKB5txg
+
+for(i in 1:length(slugs_lowA)){
+
+test<-tryCatch({get_clip_chat(slugs_lowA[i])},
+         warning = function(w){chat_dataframe <- NULL},
+         error = function(e){chat_dataframe <- NULL})
+
+Sys.sleep(3)
+    
+if(!is.null(test) & length(test)>1){
+
+  lsf_test_2 <- LSF_500minusA[i,]
+  
+  emote_names <- emote_dictionary$emote_name
+  
+  for (emote in chat_dataframe$global_emotes){
+    if(emote != 'No Emotes'){
+      emotes <- str_split(emote, pattern = ' ')
+      for (word in emotes){
+        emote_names <- append(word,emote_names)
+      
+      }
+    }
+  }
+  
+  emote_names<-unique(emote_names)
+  emote_names_df<-as.data.frame(list(emote_names),col.names='word') %>% 
+    mutate(word = as.character(word))
+  
+  
+  
+  
+  chat_dataframe=chat_dataframe %>% mutate(message = as.character(message))
+  
+  test_3 <- chat_dataframe %>% select(message) %>%
+    unnest_tokens('word', message,to_lower = F)%>% 
+    inner_join(emote_names_df)
+  
+  proportion_2<-test_3 %>% group_by(word) %>% 
+  count(sort = T, name = 'count') %>% ungroup() %>% 
+    mutate('emote_%' =round((count/sum(count))*100,digits = 2)) %>% head(4)
+  
+  
+  test2<-tryCatch({for(row in 1:nrow(proportion_2)){
+    temp_data <- proportion_2[row,]
+    
+    if(row == 1){
+      
+    lsf_test_2['first_emote'] = temp_data$word
+    lsf_test_2['first_emote_count']= temp_data$count
+    lsf_test_2['first_emote_proportion']=temp_data$`emote_%`
+  
+      
+    } else if(row == 2){
+      
+    lsf_test_2['second_emote'] = temp_data$word
+    lsf_test_2['second_emote_count']= temp_data$count
+    lsf_test_2['second_emote_proportion']=temp_data$`emote_%`
+  
+      
+    } else if(row == 3){
+      
+    lsf_test_2['third_emote'] = temp_data$word
+    lsf_test_2['third_emote_count']= temp_data$count
+    lsf_test_2['third_emote_proportion']=temp_data$`emote_%`
+  
+      
+    } else if(row == 4){
+      
+    lsf_test_2['fourth_emote'] = temp_data$word
+    lsf_test_2['fourth_emote_count']= temp_data$count
+    lsf_test_2['fourth_emote_proportion']=temp_data$`emote_%`
+    
+    lsf_new<-rbind(lsf_new,lsf_test_2)
+      
+    }else{print('nothing')}
+    
+  }},
+    warning =function(w){test2 = NULL},
+    error =function(e){test2 = NULL})
+  
+  }}
+
+
+
+```  
+

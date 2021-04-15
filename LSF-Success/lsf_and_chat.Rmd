@@ -13,6 +13,11 @@ pacman::p_load(tidyverse,stringi,httr,fromJSON,devtools,ggthemes, tidymodels)
 library(randomForest)
 
 lsf_and_chat =read_csv('lsf_and_chat.csv')
+lsf_and_chat2=read_csv('lsf_and_chat_2.csv')
+
+
+lsf_and_chat<-lsf_and_chat %>% rbind(lsf_and_chat2)
+
 
 ```
 
@@ -20,7 +25,7 @@ lsf_and_chat =read_csv('lsf_and_chat.csv')
 
 ```{r}
 
-lsf_and_chat %>% psych::describe()
+lsf_and_chat %>% glimpse()
 
 ```
 
@@ -46,7 +51,9 @@ lsf_prep_data <-lsf_and_chat %>% mutate('successful' = case_when(
 set.seed(1235)
 lsf_split <- initial_split(lsf_prep_data, strata = successful)
 lsf_train <- training(lsf_split)
+
 lsf_test <- testing(lsf_split)
+
 
 ```
 
@@ -56,8 +63,12 @@ lsf_test <- testing(lsf_split)
 
 lsf_recipe <- recipe(successful ~ 
 first_emote+second_emote+third_emote+fourth_emote+
-              first_emote_count+first_emote_count+first_emote_count+first_emote_count+
-              first_emote_proportion+first_emote_proportion+first_emote_proportion+first_emote_proportion,data = lsf_train) %>%
+              first_emote_count+second_emote_count+third_emote_count+fourth_emote_count+
+              first_emote_proportion+second_emote_proportion+third_emote_proportion+fourth_emote_proportion,data = lsf_train) %>%
+  step_other(first_emote, threshold = 6) %>% 
+  step_other(second_emote,threshold = 6) %>% 
+  step_other(third_emote,threshold = 6) %>% 
+  step_other(fourth_emote,threshold = 4) %>% 
   step_dummy(all_nominal(), -all_outcomes())
 
 lsf_prep <- prep(lsf_recipe)
@@ -72,10 +83,16 @@ lsf_juice <- juice(lsf_prep)
 ```{r}
 
 lsf_specs<-rand_forest(
+  mtry = 30,
+  trees = 750,
+  min_n = 10)%>% set_mode('classification') %>% set_engine('ranger') %>% fit(successful~., data = lsf_juice)
+
+# use tune() for hyperparam optimization
+
+lsf_specs_tune<-rand_forest(
   mtry = tune(),
   trees = 750,
-  min_n = tune()) %>% set_mode('classification') %>% set_engine('ranger')
-
+  min_n = tune())%>% set_mode('classification') %>% set_engine('ranger')
 
 ```
 
@@ -85,27 +102,84 @@ lsf_specs<-rand_forest(
 
 lsf_workflow<-workflow() %>% 
   add_recipe(lsf_recipe) %>% 
-  add_model(lsf_specs)
+  add_model(lsf_specs_tune)
 
 ```
 
 
 # Train hyperparams # stopped here since missing data
 
-## 10fold
+## 10fold -> too little data, missing some columns per hap reduce to top 10 emotes?
 
 ```{r}
 set.seed(1235)
 lsf_folds<- vfold_cv(lsf_train)
 
+grid_rf <- grid_regular(
+  mtry(range = c(15,40)),
+  min_n(range =c(10,25)),
+  levels = 7
+)
+
 tune_lsf<-tune_grid(
   lsf_workflow,
   resamples = lsf_folds,
-  grid = 10
-  
+  grid = grid_rf)
+
+
+```
+
+
+```{r}
+
+lsf_test_2 <- lsf_prep %>% bake(lsf_test)
+
+
+lsf_specs %>% predict(lsf_test_2) %>% bind_cols(lsf_test_2) %>% metrics(truth = successful, estimate=.pred_class)
+
+```
+
+
+```{r}
+
+tune_lsf %>%
+  collect_metrics() %>%
+  filter(.metric == "roc_auc") %>%
+  mutate(min_n = factor(min_n)) %>%
+  ggplot(aes(mtry, mean, color = min_n)) +
+  geom_line(alpha = 0.5, size = 1.5) +
+  geom_point() +
+  labs(y = "AUC")
+
+```
+
+
+```{r}
+best_auc <- select_best(tune_lsf,'roc_auc')
+
+final_model <- finalize_model(
+  lsf_specs_tune,
+  best_auc
 )
+library(vip)
+final_model %>% 
+  set_engine("ranger", importance = "permutation") %>%
+  fit(successful ~ .,
+    data = juice(lsf_prep)) %>%
+  vip(geom = "point")
 
+```
 
+```{r}
+final_workflow<- workflow() %>% 
+  add_recipe(lsf_recipe) %>% 
+  add_model(final_model)
+
+final <- final_workflow %>% 
+  last_fit(lsf_split)
+
+final %>% 
+  collect_metrics()
 
 
 ```
