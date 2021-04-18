@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Predicting reddit post success using twitch emotes (emoticons)</title>
+    <title>Predicting reddit post virality using twitch emotes (emoticons)</title>
     <meta charset="utf-8" />
     <meta name="author" content="Michael Puerto (Mowgli)" />
-    <meta name="date" content="2021-04-09" />
+    <meta name="date" content="2021-04-18" />
+    <script src="presentation_files/htmlwidgets/htmlwidgets.js"></script>
+    <script src="presentation_files/jquery/jquery.min.js"></script>
+    <link href="presentation_files/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+    <script src="presentation_files/datatables-binding/datatables.js"></script>
+    <link href="presentation_files/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="presentation_files/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+    <script src="presentation_files/dt-core/js/jquery.dataTables.min.js"></script>
+    <link href="presentation_files/dt-ext-fixedcolumns/css/fixedColumns.dataTables.min.css" rel="stylesheet" />
+    <script src="presentation_files/dt-ext-fixedcolumns/js/dataTables.fixedColumns.min.js"></script>
+    <link href="presentation_files/crosstalk/css/crosstalk.css" rel="stylesheet" />
+    <script src="presentation_files/crosstalk/js/crosstalk.min.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Predicting reddit post success using twitch emotes (emoticons)
+# Predicting reddit post virality using twitch emotes (emoticons)
 ### Michael Puerto (Mowgli)
-### 2021-04-09
+### 2021-04-18
 
 ---
 
@@ -22,93 +33,206 @@ class: center, middle, inverse, title-slide
 
 
 
-# What is Reddit
 
+# Before we begin
+
+.pull-left[
+
+Imagine a community of users that talk about coffee and share coffee related content. 
+
+The content can range from a discussion about coffee regions to instructional videos about the coffee making process. With most members using lingo that coffee enthusiasts are familiar with.
+This is essentially what a subreddit is!
+
+
+]
+
+--
+.pull-right[
+
+&lt;img src="https://lh3.googleusercontent.com/sieO8dzYHEYrz4xUoZ9WQnSsiebPpyFpAByKoyzUZIbmlSGsj6WtNZEVHBlknoWF0KDHJPHMtUhlEs_OoZ9Mq9XOuEI1RpRBc1PrF0Y7n1qUxa9NJ53jv1k1OQBJrK8oLpV_mAw8aY4" width="100%" /&gt;
+
+]
 
 ---
 # What is Livestreamfail
 
+Livestreamfail (LSF) is a subreddit consisting of over 1 million users worldwide. My previous analysis of LSF indicated that the majority of the content posted to LSF were Twitch related. 
+
+
+--
+In fact, most users would agree that most of the content on LSF are ‘Twitch Clips’ which are highlight portions of a livestream found on Twitch. 
+
+
+--
+You can compare a Twitch clip to brief highlight of your favorite T.V. show with typed comments by the audience.
+
+--
+.pull-left[
+A look into LSF will show you that people post Twitch clips, comments on posts and recieve karma (points) from upvotes (likes). It's not uncommon, for teams of people use LSF to platform a growing streamer, or shed light into an on going issue within Twitch. This is why understanding how LSF works can give an advantage to streamers, Twitch and sponsors looking to grow a community and build a brand. 
+]
+
+.pull-right[
+&lt;img src="https://lh4.googleusercontent.com/McgrYLOx0AdF6xd-PB1l1863X4867Ik1U3gDc6btwV_FSokVzMx3pYfqAxxhotrGqBn2GcimokKnRW2xj_F-jCoX1xSu67PzFOcujLFl" width="90%" height="90%" /&gt;
+]
 
 ---
-# What is Twitch
+# Let's look at a Twitch Clip
+
+.left-column[
+A 60 second, short video of the streamer playing a video game. 
 
 
+
+Notice the use of emotes in the live chat on the right hand side. 
+
+]
+
+
+.right-column[
+&lt;img src="https://lh6.googleusercontent.com/VhL4fVmncyLKaukrsi7f_tHPK1dwsfAb4r8DQavCGhtyH_v4VvQ8ARz_x5V8aK5_tzZWWsnulv6LCW5bsiCTWKWXctbQqpXOhaxgRuNFpfFViMGr7z4Z-IKAg1RBiD1KKMQnl9TvJ9Q" width="100%" /&gt;
+]
 
 
 ---
 # What are Emotes
 
-Like emojis used in standard text messages or on social media, twitch emotes carry some of the same qualities. For example.. (show twtich global emotes here).
-(Some flags would be nice.) 
+What separates ‘live streaming’ from traditional ‘live’ sports, news, or podcasts are the interactions between the viewers and ‘streamers’ in real-time. The viewers have the ability to chat to the ‘streamer’ using plain text and emojis.. Or emotes!
+Just like emojis, emotes are used to express some sort of emotion. Generally, emotes are used to react to what is being said or shown on the stream. 
+But better than emojis, emotes are custom to Twitch and it’s community. 
+
+--
+
+.center[
+&lt;img src="https://lh6.googleusercontent.com/lmQ52IfA5IFZ-uz4aNeqvXh8yI1dSpjxjhmrACH-dbk6F-vLte77YV5A9vZfptL3pkWodg44PyxH2RKVJGWC5fHnQr0tpQMDLOpUY7Q" width="50%" height="50%" /&gt;
+]
 
 
-Like sub-cultures on reddit, the Twich culture has develop a language using twitch emotes and third-party emotes that cannot be easily interpreted from the visuals themselves. 
+--
 
-Also, exaterated emotes also exsist and carry diffrent meanings. A perfect example is of the Twitch emote 4Head and it's third-party siblings. 
+.pull-left[
+
+The Twich culture have a language using twitch emotes and third-party emotes that cannot be easily interpreted from the visuals themselves. 
+
+]
+
+.pull-right[
+
+&lt;img src="https://i.kym-cdn.com/photos/images/original/001/873/318/c4b.png" width="20%" height="20%" /&gt;
+
+]
+
+---
+# Previous Work
+.pull-left[
+
+My previous analysis of twitch emotes revealed the possibility of uncovering similar community members based off of emote use alone. Since I could infer the sentiment from a Twitch clip using emotes, what about the sentiment of a community more generally?
+
+]
 
 
+.pull-right[
+
+&lt;img src="https://lh3.googleusercontent.com/X-kk0jsTll0aJ0dHjixcpRYyIWj2HTn_3xyI-l44WP8OZqQnw4zUopDSEMnjCvZSWTQpvYsdf2KK0Ga5E9D7PMDmRYTGrW1FO6llykHqahmxXOsUbXG14elO7tmZdKwfQYB6pc6LmpE" width="60%" height="60%" /&gt;
+]
+
+--
+
+This is a network graph connecting two streamers XqC and Forsen by emotes that were most correlated through their twitch clips featured on LSF. This graph only features 3rd party emotes. This limitation was addressed though Rchamp. 
+
+???
+Kind of like finding the similarities between celebrity communities from the emojis community members use. 
 
 
 
 ---
-# Busy Chats: Regular vs Trending
+# But why?
+
+Since emotes are generally used to react to what is being shown on stream and can be used to infer the status of broadcast, couldn’t we use them to infer if a twitch clip is ‘funny’, ‘amazing’, ‘heartbreaking’?
 
 
+&lt;br&gt;
+
+--
+Wouldn’t you think that a twitch clip that has a lot of ‘😂’ or more ‘LULWs’ would do well in a subreddit like Livestreamfail? Recent feedback from LSF on my prevous work suggest that is possible! 
 
 
+&lt;br&gt;
+--
 
----
-# Why am I doing this
+&lt;br&gt;
+Understanding the power of emotes and the influence of LSF would be benifical for growing streamers, company sponsors and Twitch to grow the community and build products.  
 
-Recently, twitch literature has begun characterizing twitch communities through twitch chat, viewership trends, and content but no known projects have used other social platforms outside of twitch to understand how twitch communities manifest and interact with one another using emotes.
-
-This project is to highlight the importance and nuance of twitch emotes in context of their respective communties. Since emotes can be used a important community indicators of X Y Z and much more. 
-
+ 
 ---
 # How am I doing this
 
-Of course we will mostly be using R for this project. I addressed a limitation my previous analysis of LSF by creating an R package to reliably interact with the Twitch Api to gather chat data not yet accomplished in R. 
-
-
-- Step one: Get reddit link with twich clip url using Bigquery
-???
-Notes here
+Until now, an R package to navigate the Twitch API to collect chat data from a VOD or Twich clip did not exist. 
 
 --
-
-- Step two: Get chat data from twitch url and gather key-performance indicators
-???
-and here too
+.center[
+So I built Rchamp.
+]
 
 --
- 
-- Step three: Append emote information to reddit data from link.
---
+.pull-left[
+&lt;img src="rchamplogo.png" width="350" height="350" /&gt;
+]
 
-- Step three.5: Create 'successful/not-successful' criteria for data.
---
+.pull-right[
 
-- Step four: Split data into testing and training datasets.
---
+The main purpose of this package is to enable other useRs to wrangle Twitch chat from Twitch clips (or VODs) into a neat dataframe. Unlike some of it's python counter-parts, it will also return global emotes used, user badge present (1st one), subcribed months, and optional JSON output. 
 
-- Step five: Train and Predict successful/not-successful posts
---
+The package is public and I'm open to contributions!
 
-- Step Six: evaluate model performance. 
+github.com/mowgl-i
+
+]
+
+
 
 ---
-# Rchamp
+# Data Collection
+
+This data was collected using some python (PRAW) and R (Rchamp) and combined into one dataset containing 817 observations. 
+
+<div id="htmlwidget-f2be5378ce199ce39f67" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f2be5378ce199ce39f67">{"x":{"filter":"none","extensions":["FixedColumns"],"data":[[2,9,17,20,22,25,26,27,30,31,36,42,50,51,52,53,56,64,69,80,86,88,7,15,18,19,21,23,32,33,37,38,44,45,47,48,49,54,55,57,58,60,63,67,70,71,73,74,77,79,81,84,85,87,90,92,93,94,95,96,97],["Chang Gang OOC talking about what the chat hoppers are talking about and calling XQC \"dogshit\"","Hasan hears Poke's new TTS","X and Dundee Realize the Truth","Cleanbois find the robbers they were looking for","Poke laughs as millions die","Ludwig Subathon Update","mizkif talks about maya","Destiny gets owned and then gets a permanent spot on Scuffed ðŸ¦","summit1g's Reaction To Esfand's Impersonation","Javaaaa view change FAIL in helicopter lesson with XQCOW on GTA RP","OTK Charity Stream Fail","Crazy earthquake in Korea","Summit8.1G ending stream","Summit1G makes an appearance on Esfand's stream","Mr B sings to X","imaqtpie gets a taste of his own medicine","Kyle Pred finally raided Burger Shot and found Human Remains inside","orgasm? you wouldn't know","XQC actually turning into a new leaf and making amends on past wrongdoings","Adept holds up xQc in game","Dundee loses the cops in 20 seconds flat EZ","Sheriff Cornwood delivers justice","How to trick a monkey","The war between Rob and the Burger Shot Family has finally started","Speedy the most inclusive drug lord","Jade and Destiny discuss appropriate breastfeeding ages","Ludwig gets noticed by VGHS","Sips_' store gets swarmed by \"mormons\"","Yeager Tries to commit insurance fraud","Buddha - Cop reminds Lang that his car is pretty damaged..","HasanAbi - X gets held at gunpoint AGAIN","Rest in pep.","Destiny calls out kaceytrons hypocrisy","Our boy Erobb be packing some heat.","Asmongold on people who buy store mounts in WoW","Kyle says bye to Jolene","Boomer gets his first speedrun WR","Speedy shows Rob the property he \"owns\"","Burger Shot vs Robert Tension Literally Heats Up","Obamasen","Hannah Hiltop and Carmella dance their way out of a ticket","Tyler's grind is going as expected","Destiny forgets to reset his speed.","TommyKay having a deep and intellectual thought","CG mag dump the cops in response to them blowing up racing car after police road spiked them.","Hikaru Raids Ludwig","rlly - Probably should","Forsen does a double decker throw","Confusion seeping from Ghost Rider","X takes a detour","Asmongold gets ashamed after he realizes the kid was still on the line","Asmongold gets jebaited","Sykkuno walks by at just the right time!","Arisâ€™ friend on animal cruelty","X attempts to fly a helicopter","Majima forgot to turn off the engine","MiltonTPike1 - Kiki Chanel flirting","AvoidingThePuddle - Aris has a change of heart","ludwig - VGHS creators send a message to ludwig through subtitles","\"It's doing my favourite thing that elephants do!\"","the azan way"],[6210,3408,1111,679,2399,2138,2512,571,796,653,1107,2093,4255,8492,773,616,1466,886,1024,675,1754,1937,140,439,85,155,355,50,254,270,365,390,182,273,17,12,130,48,49,7,126,72,193,11,28,3,21,3,47,129,162,2,108,68,63,22,144,66,14,198,2],["2021-03-23T05:43:58Z","2021-03-23T00:01:17Z","2021-03-23T03:12:22Z","2021-03-23T04:37:36Z","2021-03-22T20:43:45Z","2021-03-22T20:03:08Z","2021-03-22T19:10:09Z","2021-03-23T02:50:05Z","2021-03-23T00:07:33Z","2021-03-23T01:07:24Z","2021-03-22T20:16:25Z","2021-03-22T14:49:49Z","2021-03-22T09:39:22Z","2021-03-22T06:59:31Z","2021-03-22T18:24:18Z","2021-03-22T19:15:59Z","2021-03-22T14:06:57Z","2021-03-22T15:27:15Z","2021-03-22T12:25:04Z","2021-03-22T13:17:07Z","2021-03-22T06:28:07Z","2021-03-22T05:09:29Z","2021-03-23T17:32:01Z","2021-03-23T08:23:10Z","2021-03-23T17:06:59Z","2021-03-23T13:34:26Z","2021-03-23T07:31:52Z","2021-03-23T17:12:33Z","2021-03-23T05:49:20Z","2021-03-23T05:08:19Z","2021-03-23T01:34:31Z","2021-03-23T01:03:41Z","2021-03-23T04:10:13Z","2021-03-23T01:21:45Z","2021-03-23T15:42:25Z","2021-03-23T18:01:23Z","2021-03-23T04:37:49Z","2021-03-23T08:41:29Z","2021-03-23T08:39:49Z","2021-03-23T18:09:13Z","2021-03-23T03:22:11Z","2021-03-23T05:52:46Z","2021-03-22T23:38:24Z","2021-03-23T14:17:55Z","2021-03-23T08:11:01Z","2021-03-23T19:51:36Z","2021-03-23T08:39:15Z","2021-03-23T19:23:25Z","2021-03-23T04:19:32Z","2021-03-22T22:29:37Z","2021-03-22T20:17:57Z","2021-03-23T19:21:36Z","2021-03-22T21:42:44Z","2021-03-23T00:10:27Z","2021-03-23T00:00:10Z","2021-03-23T03:55:22Z","2021-03-22T17:58:46Z","2021-03-22T21:49:27Z","2021-03-23T07:38:40Z","2021-03-22T15:40:55Z","2021-03-23T19:51:50Z"],["Xenoleff","tzingkha","DisabledGoat32","tzingkha","SterlingSilver5","fiver49","thesaladtong","sexypipebagman","sojuboyy","turbogiraffe","Yoshimitsu87","kpoplova","MnemosyneAgiad","DruidDobby","MysteriiousComposer","FEDDY1919","Villenthessis","biosnake20","Thememecream","ItzMistaa","JeyEskeetit","OLD_PEOPLE_FUCKING","Teemaah","Villenthessis","LunaVon","Grumsgramsen","Khatzley","xxLusseyArmetxX","alcatrazcgp","NoodleTheTree","Lynxwolf191","ty9guy","Bennettisme","SirBallalicious","michaelloda9","MysteriiousComposer","pikachu8090","Ritchex","Sorenthaz","JonasGangsta","tzingkha","Cptkiller2010","Blendination","DarthSuperior","omegalaughingLulClap","Kramrebla12","unique_name_02","t4mm3r","zenongreat","MysteriiousComposer","Archanded","Authijsm","IDynasoar","greenlizard6","MysteriiousComposer","Villenthessis","callmeweed","NovoMyJogo","Cat-Snatcher","Fonjask","kinglex1"],["clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv","clips.twitch.tv"],["https://clips.twitch.tv/DrabHealthyDiamondUWot-sG2Ym1Gjb6th2TdG","https://clips.twitch.tv/ViscousAverageDonutJebaited-wL0PvdDrViBfVdEy","https://clips.twitch.tv/ColdbloodedWealthyCheeseAsianGlow-6mZCDdx_47vF_1Lg?tt_medium=redt","https://clips.twitch.tv/UninterestedHomelyKoalaAliens-jIgQFXEZX8uHg89W","https://clips.twitch.tv/AdorablePlumpMagePeoplesChamp-phIUzfF5j9BRbnNJ","https://clips.twitch.tv/SassySwissBunnyPhilosoraptor-lnMjo1t61vteBMdp","https://clips.twitch.tv/BrightDiligentBatteryCurseLit-0LadJCBZupntDeIR","https://clips.twitch.tv/SavoryGrossTigerPMSTwin-S452C1DG32ki2q2K","https://clips.twitch.tv/RichInnocentKoalaHoneyBadger-7G-znX0gJEreCzZD?tt_medium=redt","https://clips.twitch.tv/ConsiderateAgileSquidDoritosChip-oEwwojhFpxSX6ZrQ","https://clips.twitch.tv/GiantSpoopyIguanaVoteYea-y4JBWguGUO16f95l","https://clips.twitch.tv/CaringFriendlyZebraCoolStoryBob-NT8g8rmyqjDvLFju","https://clips.twitch.tv/AgileOptimisticBeanBatChest-lpZVm6zdeBUfg7Ok","https://clips.twitch.tv/JazzyFuriousPeafowlNononoCat-kqGhqd7V9qRrfQJV","https://clips.twitch.tv/ShortHorribleCockroachEleGiggle-JBLJcGbQlILiF849","https://clips.twitch.tv/HelpfulBlatantKangarooTheRinger-U6bwHt46cuM6uMIm","https://clips.twitch.tv/ScrumptiousShakingHamsterAliens-x4fLTQBKXt6Upb26","https://clips.twitch.tv/AbstemiousDreamyDotterelKappaWealth-RSlA68GXilIC8T3r","https://clips.twitch.tv/StrongMotionlessCheetahPraiseIt-BxMLJw1Fhy44d-x8","https://clips.twitch.tv/SlipperyExpensiveSardineUncleNox-tYCInHKJF5ipnWpy","https://clips.twitch.tv/StormyHelplessBeaverDoritosChip-Q0rBL8Cjyez_BjMD","https://clips.twitch.tv/SaltyArbitraryPuffinAsianGlow-wnO2NCjMTqIOTBgT","https://clips.twitch.tv/CrowdedRespectfulPenguinPartyTime-37EZ5sjsBnfVCwug","https://clips.twitch.tv/BoredRelievedQueleaRedCoat-4lrK21GyUbQzgEkp","https://clips.twitch.tv/AffluentVastClintmullinsTheRinger-82rObW6ZG1w5so9g","https://clips.twitch.tv/LaconicBrightKoupreyTBTacoRight-BlwJO-Rb7WB054L3","https://clips.twitch.tv/SlipperyEphemeralIcecreamThisIsSparta-lq2qeo1WCiGgeJCw","https://clips.twitch.tv/BombasticBoringAsteriskLeeroyJenkins-JFmsQ07yXXJt_tFA","https://clips.twitch.tv/ResoluteKnottyDinosaurBlargNaut-KLKcU4VZD9nebDQ5","https://clips.twitch.tv/SweetGracefulLadiesRickroll-dkEFuG9MBVG7jyGH","https://clips.twitch.tv/ShakingBigGorillaMingLee-WcWCc3pAhw_4rHHJ","https://clips.twitch.tv/DarkAwkwardKimchiTF2John-oDYbOTl5jlI6bYCN","https://clips.twitch.tv/SparklyCaringCoyoteHassanChop-znSC-5nUm7Kca_F3","https://clips.twitch.tv/AssiduousExuberantOpossumNononoCat-X6lraavkjlhvdkO2","https://clips.twitch.tv/PlausibleLivelyPorpoiseUnSane-NHnJvx1fPwuBEe0Y","https://clips.twitch.tv/FrigidResourcefulHawkDBstyle-8K44AOQLu-BvI3Q-","https://clips.twitch.tv/RelievedMoralSowDendiFace-zg-AdDBD5KmXIE9a","https://clips.twitch.tv/WimpyRelievedPrariedogWTRuck-ZyfM9H-upzok6DET?tt_medium=redt","https://clips.twitch.tv/LazyHardKeyboardCclamChamp-Fd_SKpaejVrebMsT","https://clips.twitch.tv/BraveScrumptiousDurianPhilosoraptor-Uxw3nGTQqIBuog8n","https://clips.twitch.tv/RockyThoughtfulKoupreyOhMyDog-zKbX8OYwOITj3BXh","https://clips.twitch.tv/CaringAmusedCakeYee-YPTYTXsIObXI4vui","https://clips.twitch.tv/SuaveGoldenCrabsThisIsSparta-7O8O-KmLzuzB9SOJ","https://clips.twitch.tv/NimbleEncouragingCroissantPeteZaroll-7M1wYwBkdLeay0lc","https://clips.twitch.tv/AntediluvianPlayfulAmazonFeelsBadMan-W3eil5nsw2BFkcJZ","https://clips.twitch.tv/RockyGoodNoodleThisIsSparta-cWtt1yxKrvbD2O4f","https://clips.twitch.tv/CarefulBlueHornetTBTacoRight-PejxiO8dH_ueKSVz","https://clips.twitch.tv/LittleYawningGrassFailFish-dmEWNCWgNs6IDPQf","https://clips.twitch.tv/ShyLongWrenNotLikeThis-m2o6quNadefwxLnB","https://clips.twitch.tv/TangibleDifficultArugulaKappaPride-d-DEvk_RRbebZdeu","https://clips.twitch.tv/CuriousCovertBunnyRedCoat-ZVNJI_IgTPdFAFlc","https://clips.twitch.tv/ProudCoweringRaisinTwitchRaid-Q0Foh5tgLVb_17zU","https://clips.twitch.tv/AmericanProtectiveAirGuitarMVGame-QvR8dsdoj4Aks1Ud","https://clips.twitch.tv/DaintyClearFrogPoooound-m9pX0JamA4EK1ZBQ","https://clips.twitch.tv/CourageousCaringMetalDAESuppy-0hOCe4omUWC2dCB0","https://clips.twitch.tv/CarefulSullenTortoiseDoritosChip-KasiPLANvskxWlcY","https://clips.twitch.tv/LachrymoseSuccessfulMinkANELE-cG-fyZytrnxHawrT","https://clips.twitch.tv/PuzzledCoyWhaleCoolCat-XXSp8TtfietizUoQ","https://clips.twitch.tv/CrepuscularWildWaspPanicBasket-G58SPPw6B4vr2Bhi","https://clips.twitch.tv/PuzzledFunnyBibimbapDatSheffy-1_SDYjTAnKC_qNZ9","https://clips.twitch.tv/SpotlessSolidClipzShadyLulu-OHS6T3oHCs3kJkZ2"],["rameeEZ","KEKW","OMEGALUL","OMEGALUL","OMEGALUL","ludwig7","modCheck","OMEGALUL","KEKW","OMEGALUL","Drake","Kreygasm","esfandL","OMEGALUL","OMEGALUL","KEKW","LUL","PogO","EZ","OMEGALUL","whipSENDIT","OMEGALUL","KEKW","roflgatorKek","KEKW","OMEGALUL","Clap","LUL","OMEGALUL","KEKW","KEKW","OMEGALUL","PepeLaugh","docPls","LUL","KEKW","POGGIES","LULW","KEKW","PagMan","adeptHR","AYAYA","LUL","PogO","shotzEvil","TombRaid","KEKW","GuitarTime","FeelsStrongMan","OMEGALUL","Drake","Jebaited","KEKW","atpRtsd","OMEGALUL","NotLikeThis","LUL","atpRtsd","Clap","LUL","hasRaid"],[65,24,183,65,32,226,16,11,71,6,230,32,126,62,254,16,4,26,129,222,130,79,19,60,5,24,10,33,297,81,75,90,3,39,56,7,200,28,7,84,9,5,3,8,15,18,5,331,44,106,213,192,18,95,326,9,15,35,10,2,58],[19.35,44.44,68.28,29.95,29.63,30.58,40,32.35,23.43,50,39.45,20.25,16.38,36.26,33.82,38.1,16.67,22.22,28.29,31.09,28.45,22.77,46.34,24,26.32,44.44,22.22,32.35,43.81,54,54.35,27.69,27.27,47.56,15.77,25.93,53.62,26.92,23.33,32.43,15.25,23.81,23.08,22.86,46.88,15.79,26.32,20.78,29.73,30.46,35.15,43.64,28.12,30.55,35.67,26.47,30,29.41,21.28,40,16.71],["UHM","OMEGALUL","LULW","KEKW","Pog","PogChamp","LULW","LUL","LUL","xqcL","OMEGALUL","soofloFkr","sum1g","LULW","TriDance","qtpBOX","KEKW","LULW","GlitchLit","monkaW","OMEGALUL","KEKW","Jebaited","OMEGALUL","LUL","LULW","EleGiggle","KEKW","DonoWall","LULW","PepeLa","PagMan","OMEGALUL","arnoldHalt","POOGERS","KEKLEO","atrioc7","FeelsStrongMan","OMEGALUL","forsenSmug","OMEGALUL","lsxyzLotion","LULW","tommykGASM","rtdRed","PogU","charboHorror","Kreygasm","monkaW","AYAYA","OMEGALUL","LUL","sykS","atpCap","PepeLaugh","KEKW","KEKW","LUL","EleGiggle","DansGame","LULW"],[60,17,36,58,25,160,7,8,55,3,144,24,101,24,112,8,3,13,112,75,41,75,5,41,5,12,10,15,48,14,24,48,2,17,46,4,41,18,7,34,7,5,3,7,9,17,4,270,44,54,183,52,11,68,173,7,11,21,10,1,35],[17.86,31.48,13.43,26.73,23.15,21.65,17.5,23.53,18.15,25,24.7,15.19,13.13,14.04,14.91,19.05,12.5,11.11,24.56,10.5,8.97,21.61,12.2,16.4,26.32,22.22,22.22,14.71,7.08,9.33,17.39,14.77,18.18,20.73,12.96,14.81,10.99,17.31,23.33,13.13,11.86,23.81,23.08,20,28.12,14.91,21.05,16.95,29.73,15.52,30.2,11.82,17.19,21.86,18.93,20.59,22,17.65,21.28,20,10.09],["OuttaPocket","KEKWait","xqcOmega","PepeLa","LULW","KomodoHype","OMEGALUL","LULW","BibleThump","KEKW","peepoHey","soofloAka","OMEGALUL","LUL","LUL","OMEGALUL","Pog","OMEGALUL","FeelsStrongMan","WeirdChamp","sykDark","pentawRangGang","LUL","Pog","LULW","LUL","PogU","monkaS","LULW","OMEGALUL","OMEGALUL","GachiPls","atpRtsd","KKool","LULW","LUL","PogChamp","Pog","charboHorror","LULW","adeptHead","KEKW","Pog","Kappa","BabyRage","xqcL","LUL","Okayge","Clap","WICKED","peepoHey","OMEGALUL","LUL","LUL","TeaTime","OMEGALUL","jaboodyLOL","atpRtsd4","PogU","HeyGuys","KKomrade"],[44,3,21,10,8,64,7,6,38,1,70,23,98,22,66,7,3,13,44,35,38,34,5,40,3,5,4,8,41,12,8,18,1,7,45,4,16,13,4,23,6,2,2,5,2,17,4,226,21,50,69,48,7,68,109,4,4,10,4,1,33],[13.1,5.56,7.84,4.61,7.41,8.66,17.5,17.65,12.54,8.33,12.01,14.56,12.74,12.87,8.79,16.67,12.5,11.11,9.65,4.9,8.32,9.8,12.2,16,15.79,9.26,8.89,7.84,6.05,8,5.8,5.54,9.09,8.54,12.68,14.81,4.29,12.5,13.33,8.88,10.17,9.52,15.38,14.29,6.25,14.91,21.05,14.19,14.19,14.37,11.39,10.91,10.94,21.86,11.93,11.76,8,8.4,8.51,20,9.51],["LUL","POGGIES","LUL","mehdiBANANA","monkaW","ludwigFrog","BASED","PepeLaugh","Pog","LUL","LULW","soofloRmr","BibleThump","PogU","TriKool","LULW","Sadge","HYPERS","Sadge","LULW","Dance","pentawICKED","OMEGALUL","LULW","BOOBA","FeelsWeirdMan","OMEGALUL","monkaW","Kappa","PepeLaugh","monkaW","COGGERS","FailFish","LULW","OMEGALUL","LULW","Clap","LUL","LUL","TriHard","Clap","LULW","MLADY","YEP","Kappa","ludwigFan","OMEGALUL","KKool","PogU","Clap","LULW","LULW","sykJam","SabaPing","PogU","pengwinS","LULW","monkaS","OMEGALUL","jeffyl1Heck","LUL"],[41,2,10,9,7,24,1,5,30,1,30,23,86,15,47,3,3,12,22,34,31,18,3,20,1,3,3,7,22,10,5,14,1,4,42,3,15,9,4,23,6,2,1,4,1,6,3,210,10,48,34,29,7,13,32,3,3,9,3,1,23],[12.2,3.7,3.73,4.15,6.48,3.25,2.5,14.71,9.9,8.33,5.15,14.56,11.18,8.77,6.26,7.14,12.5,10.26,4.82,4.76,6.78,5.19,7.32,8,5.26,5.56,6.67,6.86,3.24,6.67,3.62,4.31,9.09,4.88,11.83,11.11,4.02,8.65,13.33,8.88,10.17,9.52,7.69,11.43,3.12,5.26,15.79,13.18,6.76,13.79,5.61,6.59,10.94,4.18,3.5,8.82,6,7.56,6.38,20,6.63]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>X1<\/th>\n      <th>Post.Title<\/th>\n      <th>Post.Score<\/th>\n      <th>Created.UTC<\/th>\n      <th>Post.Author<\/th>\n      <th>domain<\/th>\n      <th>url<\/th>\n      <th>first_emote<\/th>\n      <th>first_emote_count<\/th>\n      <th>first_emote_proportion<\/th>\n      <th>second_emote<\/th>\n      <th>second_emote_count<\/th>\n      <th>second_emote_proportion<\/th>\n      <th>third_emote<\/th>\n      <th>third_emote_count<\/th>\n      <th>third_emote_proportion<\/th>\n      <th>fourth_emote<\/th>\n      <th>fourth_emote_count<\/th>\n      <th>fourth_emote_proportion<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"scrollCollapse":true,"initComplete":"function(settings, json) {\n$(this.api().table().container()).css({'font-size': '70%'});\n}","columnDefs":[{"className":"dt-right","targets":[0,2,8,9,11,12,14,15,17,18]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.initComplete"],"jsHooks":[]}</script>
 
 
-```r
-knitr::include_graphics('rchamplogo.png')
-```
+---
+# Classification: Random Forest
 
-&lt;img src="rchamplogo.png" width="350" height="350" /&gt;
+I've seperated the data into 'Successful' and 'Not-Successful' categories based off of the score the post recieved. 
 
-```r
-*testing = 1
-```
+&lt;br&gt;
+--
+After creating the labels, I could begin to train a supervised machine learning model. 
+
+&lt;br&gt;
+--
+Since this hasn’t been done yet, I decided to train a Random Forest model for its simplicity and easy to understand implementation. I deployed hyper-parameter tuning on this model to give the best possible classification results using Area under the Curve (AUC). 
+
+&lt;br&gt;
+--
+Despite the model not performing well (**SPOILER**)... some interesting have been learned and can still be learned. 
+
+---
+# Random Forest: Model evaluation
+
+The best possible model that can be derived from this data using RF produces and accuracy of 69.9% and an AUC score of 59.8%. Sensitivity is 0.94 and Specificity is 0.07. This would suggest that the model is good a predicting which posts are successful(viral), while being bad at indentifying posts that are not successful. 
+
+.pull-left[
+
+&lt;img src="auc_hyper.png" width="100%" /&gt;
+
+]
+
+
+.pull-right[
+&lt;img src="var_imp_plot.png" width="100%" /&gt;
+
+
+]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
