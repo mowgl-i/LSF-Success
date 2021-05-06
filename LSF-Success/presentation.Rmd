@@ -5,13 +5,18 @@ author:
 date: '`r Sys.Date()`'
 output:
   xaringan::moon_reader:
+    includes:
+      after_body: insert-logo.html
     css: xaringan-themer.css
+    revealjs::revealjs_presentation:
+      transition: fade
     nature:
       slideNumberFormat: "%current%"
       highlightStyle: github
       highlightLines: true
       ratio: 16:9
       countIncrementalSlides: true
+      titleSlideClass: ['center','my-title','middle']
 ---
 
 ```{r setup, include=FALSE}
@@ -74,17 +79,17 @@ In fact, most users would agree that most of the content on LSF are ‘Twitch Cl
 
 
 --
-You can compare a Twitch clip to brief highlight of your favorite T.V. show with typed comments by the audience.
+[You can compare a Twitch clip to brief highlight of your favorite T.V. show with typed comments by the audience.](https://www.twitch.tv/gmhikaru/clip/CarefulRoundBurritoKappa-xTLV-KaURdEm9EnR)
 
 --
 .pull-left[
-A look into LSF will show you that people post Twitch clips, comments on posts and recieve karma (points) from upvotes (likes). It's not uncommon, for teams of people use LSF to platform a growing streamer, or shed light into an on going issue within Twitch. This is why understanding how LSF works can give an advantage to streamers, Twitch and sponsors looking to grow a community and build a brand. 
+A look into LSF will show you that people post Twitch clips, comments on posts and receive karma (points) from upvotes (likes). It's not uncommon, for teams of people use LSF to platform a growing streamer or shed light on an issue within Twitch. This is why understanding how LSF works can give an advantage to streamers, Twitch and sponsors looking to grow a community and build a brand. 
 ]
 
 .pull-right[
 ```{r,echo=FALSE, out.height='90%', out.width='90%'}
 
-knitr::include_graphics('https://lh4.googleusercontent.com/McgrYLOx0AdF6xd-PB1l1863X4867Ik1U3gDc6btwV_FSokVzMx3pYfqAxxhotrGqBn2GcimokKnRW2xj_F-jCoX1xSu67PzFOcujLFl')
+knitr::include_graphics('https://lh3.googleusercontent.com/yqGIvyR3kNDEXQMbMEnKxTHd13u5QB7RyO2VA9U6zmPKzyAJwyM9MUEls0rwxaqVQw_pkmagMEoVeuB_zbg4Q9pnXN2xOMP50LTPsI5n=s647')
 
 ```
 ]
@@ -114,7 +119,7 @@ knitr::include_graphics('https://lh6.googleusercontent.com/VhL4fVmncyLKaukrsi7f_
 ---
 # What are Emotes
 
-What separates ‘live streaming’ from traditional ‘live’ sports, news, or podcasts are the interactions between the viewers and ‘streamers’ in real-time. The viewers have the ability to chat to the ‘streamer’ using plain text and emojis.. Or emotes!
+What separates ‘live streaming’ from traditional ‘live’ TV are the interactions between the viewers and ‘streamers’ in real-time. The viewers have the ability to chat to the ‘streamer’ using plain text and emojis.. Or emotes!
 Just like emojis, emotes are used to express some sort of emotion. Generally, emotes are used to react to what is being said or shown on the stream. 
 But better than emojis, emotes are custom to Twitch and it’s community. 
 
@@ -123,7 +128,7 @@ But better than emojis, emotes are custom to Twitch and it’s community.
 .center[
 ```{r, echo=FALSE, out.height='50%',out.width='50%'}
 
-knitr::include_graphics('https://lh6.googleusercontent.com/lmQ52IfA5IFZ-uz4aNeqvXh8yI1dSpjxjhmrACH-dbk6F-vLte77YV5A9vZfptL3pkWodg44PyxH2RKVJGWC5fHnQr0tpQMDLOpUY7Q')
+knitr::include_graphics('https://lh3.googleusercontent.com/3wUgo6c-Q3nY3LfT7OVAYg-_Ni_e987JH2z97CuzFlUoqvrG9Wzqgu7UBDlD3CcMwZZUjNIAahNRX_7Mgtx7uRBIvPZ6O7JV0K6cRgs=s409')
 
 ```
 ]
@@ -133,7 +138,7 @@ knitr::include_graphics('https://lh6.googleusercontent.com/lmQ52IfA5IFZ-uz4aNeqv
 
 .pull-left[
 
-The Twich culture have a language using twitch emotes and third-party emotes that cannot be easily interpreted from the visuals themselves. 
+The Twitch culture have a language using twitch emotes and third-party emotes that cannot be easily interpreted from the visuals themselves. 
 
 ]
 
@@ -152,7 +157,7 @@ knitr::include_graphics('https://i.kym-cdn.com/photos/images/original/001/873/31
 # Previous Work
 .pull-left[
 
-My previous analysis of twitch emotes revealed the possibility of uncovering similar community members based off of emote use alone. Since I could infer the sentiment from a Twitch clip using emotes, what about the sentiment of a community more generally?
+My previous analysis of twitch emotes revealed the possibility of uncovering similar community members based off of emote use alone. Since you could infer the sentiment from a Twitch clip using emotes, what about the sentiment of a community more generally?
 
 ]
 
@@ -168,7 +173,8 @@ knitr::include_graphics('https://lh3.googleusercontent.com/X-kk0jsTll0aJ0dHjixcp
 
 --
 
-This is a network graph connecting two streamers XqC and Forsen by emotes that were most correlated through their twitch clips featured on LSF. This graph only features 3rd party emotes. This limitation was addressed though Rchamp. 
+This is a network graph connecting two streamers XqC and Forsen by emotes that were they most correlated through their twitch clips featured on LSF. 
+ 
 
 ???
 Kind of like finding the similarities between celebrity communities from the emojis community members use. 
@@ -176,32 +182,31 @@ Kind of like finding the similarities between celebrity communities from the emo
 
 
 ---
+class: center,middle
+
 # But why?
 
-Since emotes are generally used to react to what is being shown on stream and can be used to infer the status of broadcast, couldn’t we use them to infer if a twitch clip is ‘funny’, ‘amazing’, ‘heartbreaking’?
-
-
 <br>
 
 --
-Wouldn’t you think that a twitch clip that has a lot of ‘😂’ or more ‘LULWs’ would do well in a subreddit like Livestreamfail? Recent feedback from LSF on my prevous work suggest that is possible! 
+Wouldn’t you think that a twitch clip that has a lot of ‘😂’ or more ‘LULWs’ would do well in a subreddit like Livestreamfail? Recent feedback from LSF on my previous work suggest that is possible!  
 
 
 <br>
 --
 
 <br>
-Understanding the power of emotes and the influence of LSF would be benifical for growing streamers, company sponsors and Twitch to grow the community and build products.  
+Understanding the power of emotes and the influence that LSF has on the twitch community would be beneficial for growing streamers, company sponsors and Twitch so that they may grow the community and build products.
 
  
 ---
 # How am I doing this
 
-Until now, an R package to navigate the Twitch API to collect chat data from a VOD or Twich clip did not exist. 
+Until now, an R package to navigate the Twitch API to collect chat data from a VOD or Twitch clip did not exist. 
 
 --
 .center[
-So I built Rchamp.
+So I built Rchamp to end the frustration an complication of using different languages. 
 ]
 
 --
@@ -217,13 +222,29 @@ knitr::include_graphics('rchamplogo.png')
 
 .pull-right[
 
-The main purpose of this package is to enable other useRs to wrangle Twitch chat from Twitch clips (or VODs) into a neat dataframe. Unlike some of it's python counter-parts, it will also return global emotes used, user badge present (1st one), subcribed months, and optional JSON output. 
+The main purpose of this package is to enable other useRs to wrangle Twitch chat from Twitch clips (or VODs) into a neat data frame. Unlike some of its python counterparts, it will also return global emotes used, user badge present (1st one), subscribed months, and optional JSON output. 
 
 The package is public and I'm open to contributions!
 
-github.com/mowgl-i
+[github.com/mowgl-i](github.com/mowgl-i)
+
+```{r,eval=FALSE}
+
+devtools::install_github('mowgl-i/rchamp@Development')
+
+```
+
 
 ]
+
+---
+# Data Collection
+
+```{r}
+
+
+
+```
 
 
 
@@ -236,7 +257,7 @@ This data was collected using some python (PRAW) and R (Rchamp) and combined int
 library(DT)
 lsf_and_chat <- read.csv('lsf_and_chat.csv')
 
-datatable(lsf_and_chat, rownames = F,extensions = 'FixedColumns', options = list(dom='t',scrollX=TRUE, scrollCollapse=TRUE,initComplete = JS(
+datatable(lsf_and_chat, options = list(scrollX=TRUE,initComplete = JS(
         "function(settings, json) {",
         "$(this.api().table().container()).css({'font-size': '70%'});",
         "}")))
@@ -247,24 +268,27 @@ datatable(lsf_and_chat, rownames = F,extensions = 'FixedColumns', options = list
 ---
 # Classification: Random Forest
 
-I've seperated the data into 'Successful' and 'Not-Successful' categories based off of the score the post recieved. 
+The data was seperated into 'Successful' and 'Not-Successful' categories based off of the score the post recieved. 
 
 <br>
 --
-After creating the labels, I could begin to train a supervised machine learning model. 
+
+Since this has not been done yet, I decided to train a Random Forest model for its simplicity and easy to understand implementation. I deployed hyper-parameter tuning on this model to give the best possible classification results using Area under the Curve (AUC). 
 
 <br>
---
-Since this hasn’t been done yet, I decided to train a Random Forest model for its simplicity and easy to understand implementation. I deployed hyper-parameter tuning on this model to give the best possible classification results using Area under the Curve (AUC). 
 
-<br>
 --
-Despite the model not performing well (**SPOILER**)... some interesting have been learned and can still be learned. 
+```{r,echo=FALSE, out.height='40%', out.width='40%'}
+
+knitr::include_graphics('https://upload.wikimedia.org/wikipedia/commons/7/76/Random_forest_diagram_complete.png')
+
+```
 
 ---
 # Random Forest: Model evaluation
 
-The best possible model that can be derived from this data using RF produces and accuracy of 69.9% and an AUC score of 59.8%. Sensitivity is 0.94 and Specificity is 0.07. This would suggest that the model is good a predicting which posts are successful(viral), while being bad at indentifying posts that are not successful. 
+The best possible model that can be derived from this data using RF produces an accuracy of 69.9% and an AUC (Area Under the Curve) score of 59.8%. Sensitivity is 0.94 and Specificity is 0.07. This would suggest that the model is good a predicting which posts are successful(viral), while being not so good at identifying posts that are not successful.
+
 
 .pull-left[
 
@@ -285,7 +309,101 @@ knitr::include_graphics('var_imp_plot.png')
 
 ]
  
+ 
+---
+# What did we learn? What was missing?
+
+A very close EDA of the data (also Sensitivity/Specificity) shows that there are more than few posts that contain lots of interactions and emotes but did not gain traction on LSF. 
+
+Emotes alone are not enough! More data is needed about Twitch clips in order to understand why posts go viral. 
+
+--
+
+Some ideas are to include broadcaster, total followers of the broadcaster, total views of the clip, emote + word sentiment scores, and reddit post author. 
+
+Different modeling techniques, both supervised and unsupervised, should be tried.
 
 
 
+---
+# Next Steps and impacts. 
+
+This project serves the R community, Reddit community and the Twitch community.
+
+**The goal is to understand the power of emotes and the influence that LSF has on the twitch community for growing streamers, company sponsors and Twitch so that they may grow the community and build products.**
+--
+
+
+Report my findings to folks over at Livestreamfail!
+
+--
+
+It was clear to me that I need more data! Not just the kind of data we grab from an API, but information that can be extracted from what is returned. 
+
+--
+
+There will be more features added to Rchamp to really squeeze out the data tucked away on Reddit and Twitch. 
+
+--
+
+Journal of Open Source Software?
+
+--
+
+Dashboard-like webapp to bring Rchamp to life!?
+
+
+---
+class: my-title,center, middle
+
+# Questions?
+
+```{r,echo=FALSE, out.height='20%',out.width='20%'}
+
+knitr::include_graphics('https://b.thumbs.redditmedia.com/82ynfU63aaUDnhCBqp24vdy46UVv8OUP__CtpHzN9Uw.png')
+
+```
+
+<br>
+<br>
+
+email: Mepuerto@uncg.edu || github: mowgl-i || mowgl-i.com
+
+
+---
+# Why the name 'Rchamp'?
+
+It's a play on words from the famous twitch emote PogCamp. This emote is used to express excitement!
+
+
+.pull-left[
+
+## Old
+
+```{r,echo=FALSE,out.height='50%',out.width='50%'}
+
+knitr::include_graphics('https://blog.cdn.own3d.tv/resize=fit:crop,height:400,width:600/pKwIyI8RyGtPW35ZFg2m')
+
+```
+]
+
+.pull-right[
+
+## New
+
+```{r,echo=FALSE,out.height='40%',out.width='40%'}
+knitr::include_graphics('https://static-cdn.jtvnw.net/emoticons/v1/81273/3.0')
+```
+
+
+]
+
+---
+# What is Random Forest?
+
+```{r,echo=FALSE, out.height='50%', out.width='50%'}
+
+knitr::include_graphics('https://upload.wikimedia.org/wikipedia/commons/7/76/Random_forest_diagram_complete.png')
+
+```
 

@@ -113,18 +113,25 @@ lsf_workflow<-workflow() %>%
 
 ```{r}
 set.seed(1235)
+parallel::setDefaultCluster()
+
 lsf_folds<- vfold_cv(lsf_train)
 
+metrics_x <- metric_set(accuracy,
+                      sens,spec,roc_auc)
+
+
 grid_rf <- grid_regular(
-  mtry(range = c(15,40)),
-  min_n(range =c(10,25)),
-  levels = 7
+  mtry(range = c(15,20)),
+  min_n(range =c(10,20)),
+  levels = 5
 )
 
 tune_lsf<-tune_grid(
   lsf_workflow,
   resamples = lsf_folds,
-  grid = grid_rf)
+  grid = grid_rf,
+  metrics = metrics_x)
 
 
 ```
@@ -159,8 +166,7 @@ best_auc <- select_best(tune_lsf,'roc_auc')
 
 final_model <- finalize_model(
   lsf_specs_tune,
-  best_auc
-)
+  best_auc)
 library(vip)
 final_model %>% 
   set_engine("ranger", importance = "permutation") %>%
@@ -171,6 +177,7 @@ final_model %>%
 ```
 
 ```{r}
+
 final_workflow<- workflow() %>% 
   add_recipe(lsf_recipe) %>% 
   add_model(final_model)
@@ -180,6 +187,13 @@ final <- final_workflow %>%
 
 final %>% 
   collect_metrics()
+
+
+```
+```{r}
+tune_lsf %>% collect_metrics() %>% filter(mtry==15,min_n==10)
+
+
 
 
 ```
